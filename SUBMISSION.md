@@ -13,7 +13,6 @@
 
 ## Links and review access
 
-- Google Drive folder: **Replace with the shareable folder link after uploading this package.**
 - Source repository: https://github.com/Ashishkr05/ajaia-pages
 - Live product: https://ajaia-pages.onrender.com
 - Health check: https://ajaia-pages.onrender.com/api/health; verified response is `{"ok":true,"storage":"postgres"}`.
