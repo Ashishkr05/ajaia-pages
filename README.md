@@ -4,13 +4,14 @@ A small, calm shared writing space built for the Ajaia full stack product engine
 
 ## Run locally
 
-Requirements: Node.js 20 or newer. No package install is needed; the app uses Node's built-in modules.
+Requirements: Node.js 20 or newer.
 
 ```sh
+npm ci
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000). For automatic server restarts while developing, use `npm run dev`. Data is stored in `data/store.json` and created on first run. That file is ignored by Git.
+Open [http://localhost:3000](http://localhost:3000). For automatic server restarts while developing, use `npm run dev`. Without `DATABASE_URL`, local data is stored in `data/store.json` and created on first run. That file is ignored by Git.
 
 ## Demo accounts
 
@@ -44,9 +45,13 @@ The tests exercise store rules, Markdown conversion, and HTTP behavior: content 
 
 ## Deployment
 
-Locally, the app binds to `127.0.0.1`. In production (`NODE_ENV=production`) it binds to `0.0.0.0`; `PORT`, `HOST`, and `DATA_DIR` can override the port, bind address, and data directory. It can run on a Node host that supports a persistent writable volume. For a single-instance deployment, mount durable storage at `/app/data` in the supplied Docker image so documents survive redeploys. JSON storage is intentionally simple and is not suitable for concurrent multi-instance production traffic.
+The app serves the browser UI and API from one Node web service. Set `DATABASE_URL` to a PostgreSQL connection string to store documents and sharing records in Postgres; without it, the app uses local JSON for development. On first database start it creates the two required tables and adds the demo Welcome page if the database is empty. Keep `DATABASE_URL` private and configure it as a Render secret, not in source control.
 
-**Live product:** pending deployment. The project is ready to deploy, but this workspace has no connected hosting account or authorized deployment target. Do not treat a local URL as a public deployment.
+For a free demo deployment, use Supabase Free Postgres for durable document data and a Render Free Web Service for the app. In Supabase, create a project and copy its **Session pooler** connection string from **Connect**. In Render, create a Blueprint from this GitHub repository using `render.yaml`, set `DATABASE_URL` to that connection string when prompted, and deploy the `main` branch. The `/api/health` endpoint is configured as the Render health check. You can also create a regular Render Web Service with build command `npm ci`, start command `npm start`, `NODE_ENV=production`, and `DATABASE_URL` set in Environment.
+
+Free hosting has tradeoffs: Render services sleep after 15 minutes without traffic and can take around a minute to wake up. Render Free does not provide persistent disks, so do not use the local JSON mode for a deployed app. Supabase Free projects can pause after a week with very low activity; resume them from the Supabase dashboard if that happens. Review the current [Render free instance limits](https://render.com/docs/free) and [Supabase free-project pausing policy](https://supabase.com/docs/guides/platform/free-project-pausing).
+
+Locally, `PORT`, `HOST`, and `DATA_DIR` can override the port, bind address, and local data directory. A live deployment URL will be added here after the service is created and verified.
 
 ## Product and engineering notes
 

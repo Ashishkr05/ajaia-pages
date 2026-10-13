@@ -3,6 +3,7 @@ import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
+import pg from 'pg';
 import { canAccess, createDocument, updateDocument, grantAccess, listDocuments, sanitizeContent } from './src/store.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
@@ -15,18 +16,84 @@ const users = [
 ];
 let state;
 let persistQueue = Promise.resolve();
-await mkdir(dataDir, { recursive: true });
-try {
-  state = JSON.parse(await readFile(dbPath, 'utf8'));
-  if (!state || !Array.isArray(state.documents) || !Array.isArray(state.shares)) throw new Error('The document store has an invalid shape.');
-} catch (error) {
-  if (error.code !== 'ENOENT') throw new Error(`Could not load document store at ${dbPath}; refusing to replace existing data.`, { cause: error });
-  state = { documents: [
-    { id: 'welcome', title: 'Welcome to Pages', content: '<h1>Make room for good work.</h1><p>A calm place for your team to think, write, and move forward together.</p><h2>Start with the essentials</h2><ul><li>Create a page for an idea or project</li><li>Invite a teammate when you are ready</li><li>Your changes save automatically</li></ul><p>Try the demo account switcher in the top right to preview a shared workspace.</p>', ownerId: 'ashish', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+const pool = process.env.DATABASE_URL ? new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 5 }) : null;
+function initialState() {
+  const now = new Date().toISOString();
+  return { documents: [
+    { id: 'welcome', title: 'Welcome to Pages', content: '<h1>Make room for good work.</h1><p>A calm place for your team to think, write, and move forward together.</p><h2>Start with the essentials</h2><ul><li>Create a page for an idea or project</li><li>Invite a teammate when you are ready</li><li>Your changes save automatically</li></ul><p>Try the demo account switcher in the top right to preview a shared workspace.</p>', ownerId: 'ashish', createdAt: now, updatedAt: now }
   ], shares: [{ documentId: 'welcome', userId: 'maya', permission: 'editor' }] };
-  await persist();
 }
+async function initializePostgres() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ajaia_documents (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL CHECK (char_length(title) BETWEEN 1 AND 120),
+      content TEXT NOT NULL,
+      owner_id TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ajaia_shares (
+      document_id TEXT NOT NULL REFERENCES ajaia_documents(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL,
+      permission TEXT NOT NULL CHECK (permission IN ('editor', 'viewer')),
+      PRIMARY KEY (document_id, user_id)
+    );
+    CREATE INDEX IF NOT EXISTS ajaia_shares_user_id_idx ON ajaia_shares(user_id);
+  `);
+  const [documents, shares] = await Promise.all([
+    pool.query('SELECT id, title, content, owner_id, created_at, updated_at FROM ajaia_documents'),
+    pool.query('SELECT document_id, user_id, permission FROM ajaia_shares')
+  ]);
+  state = {
+    documents: documents.rows.map(row => ({ id: row.id, title: row.title, content: row.content, ownerId: row.owner_id, createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString() })),
+    shares: shares.rows.map(row => ({ documentId: row.document_id, userId: row.user_id, permission: row.permission }))
+  };
+  if (state.documents.length === 0) {
+    state = initialState();
+    await persistAllPostgres();
+  }
+}
+async function initializeJsonStore() {
+  await mkdir(dataDir, { recursive: true });
+  try {
+    state = JSON.parse(await readFile(dbPath, 'utf8'));
+    if (!state || !Array.isArray(state.documents) || !Array.isArray(state.shares)) throw new Error('The document store has an invalid shape.');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw new Error(`Could not load document store at ${dbPath}; refusing to replace existing data.`, { cause: error });
+    state = initialState();
+    await persist();
+  }
+}
+async function initializeStore() {
+  if (pool) await initializePostgres();
+  else await initializeJsonStore();
+}
+async function persistAllPostgres() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const doc of state.documents) await client.query(
+      `INSERT INTO ajaia_documents (id, title, content, owner_id, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, content = EXCLUDED.content, updated_at = EXCLUDED.updated_at`,
+      [doc.id, doc.title, doc.content, doc.ownerId, doc.createdAt, doc.updatedAt]
+    );
+    for (const share of state.shares) await client.query(
+      `INSERT INTO ajaia_shares (document_id, user_id, permission) VALUES ($1, $2, $3)
+       ON CONFLICT (document_id, user_id) DO UPDATE SET permission = EXCLUDED.permission`,
+      [share.documentId, share.userId, share.permission]
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    error.status = 500;
+    throw error;
+  } finally { client.release(); }
+}
+await initializeStore();
 function persist() {
+  if (pool) return persistAllPostgres();
   const snapshot = JSON.stringify(state, null, 2);
   const operation = persistQueue.catch(() => {}).then(async () => {
     const temporaryPath = `${dbPath}.tmp`;
@@ -50,6 +117,10 @@ async function body(req) {
 function userFor(req) { return users.find(u => u.id === (req.headers['x-user-id'] || 'ashish')); }
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+  if (req.method === 'GET' && url.pathname === '/api/health') {
+    try { if (pool) await pool.query('SELECT 1'); return json(res, 200, { ok: true }); }
+    catch { return json(res, 503, { ok: false }); }
+  }
   if (req.method === 'GET' && url.pathname === '/api/session') return json(res, 200, { users, currentUser: userFor(req) });
   if (url.pathname.startsWith('/api/')) {
     const user = userFor(req); if (!user) return json(res, 401, { error: 'Choose a valid demo account.' });
@@ -83,3 +154,6 @@ const server = http.createServer(async (req, res) => {
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
 server.listen(port, host, () => console.log(`Ajaia Pages running at http://localhost:${server.address().port}`));
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {
+  server.close(async () => { if (pool) await pool.end(); process.exit(0); });
+});
