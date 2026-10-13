@@ -13,11 +13,11 @@
 
 ## Links and review access
 
-- Google Drive folder: **Pending upload**. Create one folder containing the source package and submission materials, then add its share link to the application.
+- Google Drive folder: **Replace with the shareable folder link after uploading this package.**
 - Source repository: https://github.com/Ashishkr05/ajaia-pages
 - Live product: https://ajaia-pages.onrender.com
 - Health check: https://ajaia-pages.onrender.com/api/health; verified response is `{"ok":true,"storage":"postgres"}`.
-- Walkthrough: https://www.loom.com/share/db509be2aa1d49868817657db10892e5 (confirm the link opens without requiring reviewer access).
+- Walkthrough: https://www.loom.com/share/db509be2aa1d49868817657db10892e5
 - Demo credentials: no passwords; select Ashish Kumar, Maya Chen, or Jordan Lee in the account switcher. The emails and starting access are listed in `README.md`.
 - Local start: run `npm ci` then `npm start`, and open `http://localhost:3000`.
 
