@@ -50,4 +50,4 @@ Locally, the app binds to `127.0.0.1`. In production (`NODE_ENV=production`) it 
 
 ## Product and engineering notes
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for scope and design choices, [AI_WORKFLOW.md](AI_WORKFLOW.md) for AI use, and [SUBMISSION.md](SUBMISSION.md) for the deliverable checklist. The walkthrough video link is in [VIDEO_LINK.txt](VIDEO_LINK.txt).
+See [ARCHITECTURE.md](ARCHITECTURE.md) for scope and design choices, [AI_WORKFLOW.md](AI_WORKFLOW.md) for AI use, and [SUBMISSION.md](SUBMISSION.md) for the deliverable checklist. The walkthrough video is linked in the submission notes.

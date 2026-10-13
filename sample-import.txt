@@ -1,4 +1,0 @@
-﻿Ajaia Pages import demo
-
-This is a plain text sample for testing file import.
-It becomes a new editable page with paragraph breaks preserved.

@@ -7,8 +7,8 @@
 5. `README.md` - local setup, demo accounts, features, and deployment notes.
 6. `ARCHITECTURE.md` - product scope, architecture, tradeoffs, and next steps.
 7. `AI_WORKFLOW.md` - tools, practical AI use, changes, and verification.
-8. `VIDEO_LINK.txt` - public walkthrough video URL.
-9. `sample-import.txt` and `sample-import.md` - small files reviewers can use to try text and Markdown import.
+8. `VIDEO_LINK.txt` - public walkthrough URL for the Drive submission bundle (kept out of the GitHub source repository).
+9. `sample-import.txt` and `sample-import.md` - optional local import demos, kept out of the GitHub source repository.
 
 ## Links and review access
 
