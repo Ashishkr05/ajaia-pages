@@ -9,7 +9,7 @@
 7. `AI_WORKFLOW.md` - tools, practical AI use, changes, and verification.
 8. `VIDEO_LINK.txt` - public walkthrough URL for the Drive submission bundle (kept out of the GitHub source repository).
 9. `sample-import.txt` and `sample-import.md` - optional local import demos, kept out of the GitHub source repository.
-10. `render.yaml`, `Dockerfile`, `package.json`, and `package-lock.json` - Render Blueprint, container setup, and locked PostgreSQL driver dependency.
+10. `render.yaml`, `package.json`, and `package-lock.json` - Render Blueprint configuration and locked PostgreSQL driver dependency.
 
 ## Links and review access
 
