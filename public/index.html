@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f5"><meta name="description" content="A thoughtful shared workspace for writing and ideas.">
+  <title>Pages — Ajaia</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Pages home"><span class="brand-mark">a.</span><span>ajaia<span class="brand-light"> / pages</span></span></a>
+      <div class="workspace-label">WORKSPACE</div>
+      <div class="nav-item active" aria-current="page"><span class="nav-icon">▤</span> All pages <span class="nav-count" id="page-count">0</span></div>
+      <div class="sidebar-section"><span>YOUR SPACE</span><div class="sidebar-tools"><button id="import-file-side" class="import-button" title="Import a .txt or .md file">↑ Import</button><button id="new-doc-side" class="icon-button" title="New page" aria-label="Create new page">+</button></div></div>
+      <div id="sidebar-docs" class="sidebar-docs"></div>
+      <div class="sidebar-bottom">
+        <div class="storage-card"><div class="storage-icon">✦</div><div><strong>A little room to think</strong><p>Your work, gathered in one place.</p></div></div>
+        <div class="profile-row"><div class="avatar avatar-dark" id="profile-avatar">AK</div><div class="profile-copy"><strong id="profile-name">Ashish Kumar</strong><span>Demo workspace</span></div><span class="chevron">⌄</span></div>
+      </div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><div class="breadcrumbs"><span>All pages</span><span class="crumb-slash">/</span><span id="crumb-title">Welcome to Pages</span></div><div class="top-actions"><div class="save-state" id="save-state" role="status" aria-live="polite"><span class="save-dot"></span> All changes saved</div><button class="import-top" id="import-file-top" title="Import .txt or .md files up to 60 KB" aria-label="Import .txt or .md files up to 60 KB">↑ Import</button><button class="new-page-top" id="new-doc-top" aria-label="Create a new page"><span class="desktop-label">＋ New page</span><span class="mobile-label">＋</span></button><button class="share-button" id="share-open" aria-label="Share this page"><span>↗</span> Share</button><div class="avatar-stack" id="avatar-stack"></div><select id="account-select" aria-label="Switch demo account" class="account-select"><option value="ashish">AK · Ashish</option><option value="maya">MC · Maya</option><option value="jordan">JL · Jordan</option></select></div></header>
+      <section class="document-stage" id="document-stage">
+        <div class="document-meta"><div class="doc-label"><span class="doc-glyph">▤</span><span id="access-label">OWNED BY YOU</span><span class="meta-divider">·</span><span id="updated-label">Edited just now</span></div></div>
+        <div class="doc-content-wrap"><input id="doc-title" class="doc-title" maxlength="120" value="Welcome to Pages" aria-label="Page title"><div class="doc-subtitle">A good place to get the thinking out of your head.</div>
+          <div class="editor-card"><div class="toolbar" role="toolbar" aria-label="Formatting">
+            <select id="format-block" aria-label="Text style"><option value="p">Normal text</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option></select><span class="tool-separator"></span>
+            <button class="tool" data-command="bold" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button><button class="tool italic" data-command="italic" title="Italic (Ctrl+I)" aria-label="Italic">I</button><button class="tool underline" data-command="underline" title="Underline (Ctrl+U)" aria-label="Underline">U</button><span class="tool-separator"></span><button class="tool list-tool" data-command="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list">☷</button><button class="tool list-tool" data-command="insertOrderedList" title="Numbered list" aria-label="Numbered list">≡</button><span class="toolbar-spacer"></span><span class="toolbar-hint">⌘ or Ctrl + B, I, U</span>
+          </div><div id="editor" class="editor" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Document content"><p>Start writing something worth sharing.</p></div><div class="editor-footer"><span>Press <kbd>Enter</kbd> to keep writing</span><span id="word-count">0 words</span></div></div>
+          <div class="below-editor"><span class="sparkle">✦</span><span>Import .txt or .md files up to 60 KB · Markdown headings, emphasis, and lists are preserved.</span></div>
+        </div>
+      </section>
+      <section class="empty-state hidden" id="empty-state"><div class="empty-art"><div class="empty-sheet"><span>✦</span><i></i><i></i><i></i></div></div><p class="eyebrow">YOUR SPACE, YOUR PACE</p><h1>Make room for good work.</h1><p class="empty-copy">A calm place to get your thinking out of your head and into motion.</p><button class="primary-button" id="empty-create">＋ &nbsp;Create your first page</button><div class="empty-foot">Start with a blank page, or bring in a text file.</div></section>
+    </main>
+  </div>
+  <input type="file" id="file-input" accept=".txt,.md,text/plain,text/markdown" hidden>
+  <div class="toast" id="toast" role="status"></div>
+  <div class="modal-backdrop hidden" id="share-modal"><section class="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-title"><button class="modal-close" id="share-close" aria-label="Close">×</button><div class="modal-icon">↗</div><p class="eyebrow">BRING SOMEONE IN</p><h2 id="share-title">Share this page</h2><p class="modal-copy">Good work gets better when it’s shared with the right people.</p><form id="share-form"><label for="share-email">Invite by email</label><div class="invite-row"><input id="share-email" type="email" placeholder="name@company.com" required><select id="share-permission" aria-label="Permission"><option value="editor">Editor</option><option value="viewer">Viewer</option></select><button class="primary-button invite-button">Invite</button></div><p class="form-error" id="share-error"></p></form><div class="people-heading">PEOPLE WITH ACCESS</div><div id="people-list" class="people-list"></div><div class="demo-note">Demo workspace · Try maya@ajaia.example or jordan@ajaia.example</div></section></div>
+  <script type="module" src="/app.js"></script>
+</body></html>
