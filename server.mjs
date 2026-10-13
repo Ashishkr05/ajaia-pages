@@ -118,8 +118,9 @@ function userFor(req) { return users.find(u => u.id === (req.headers['x-user-id'
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (req.method === 'GET' && url.pathname === '/api/health') {
-    try { if (pool) await pool.query('SELECT 1'); return json(res, 200, { ok: true }); }
-    catch { return json(res, 503, { ok: false }); }
+    if (!pool && process.env.NODE_ENV === 'production') return json(res, 503, { ok: false, storage: 'unconfigured' });
+    try { if (pool) await pool.query('SELECT 1'); return json(res, 200, { ok: true, storage: pool ? 'postgres' : 'local-json' }); }
+    catch { return json(res, 503, { ok: false, storage: 'postgres-unavailable' }); }
   }
   if (req.method === 'GET' && url.pathname === '/api/session') return json(res, 200, { users, currentUser: userFor(req) });
   if (url.pathname.startsWith('/api/')) {

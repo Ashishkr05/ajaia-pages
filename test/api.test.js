@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 async function startIsolatedServer(dataDir) {
   const child = spawn(process.execPath, [join(root, 'server.mjs')], {
     cwd: root,
-    env: { ...process.env, PORT: '0', HOST: '127.0.0.1', DATA_DIR: dataDir },
+    env: { ...process.env, NODE_ENV: 'test', PORT: '0', HOST: '127.0.0.1', DATA_DIR: dataDir },
     stdio: ['ignore', 'pipe', 'pipe']
   });
   let output = '';
@@ -68,6 +68,9 @@ test('HTTP API enforces sharing, sanitizes content, and persists changes', async
     assert.equal(home.status, 200);
     assert.equal(home.headers.get('x-content-type-options'), 'nosniff');
     assert.match(home.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+    const health = await fetch(`${origin}/api/health`);
+    assert.equal(health.status, 200);
+    assert.deepEqual(await health.json(), { ok: true, storage: 'local-json' });
 
     const { response: blankCreated, data: blankData } = await request(origin, 'ashish', '/api/documents', {
       method: 'POST', body: JSON.stringify({ title: 'Untitled page', content: '<p>Start writing something worth sharing.</p>' })
