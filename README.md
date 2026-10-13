@@ -51,7 +51,7 @@ For a free demo deployment, use Supabase Free Postgres for durable document data
 
 Free hosting has tradeoffs: Render services sleep after 15 minutes without traffic and can take around a minute to wake up. Render Free does not provide persistent disks, so do not use the local JSON mode for a deployed app. Supabase Free projects can pause after a week with very low activity; resume them from the Supabase dashboard if that happens. Review the current [Render free instance limits](https://render.com/docs/free) and [Supabase free-project pausing policy](https://supabase.com/docs/guides/platform/free-project-pausing).
 
-Live product: [https://ajaia-pages.onrender.com](https://ajaia-pages.onrender.com). The health endpoint is [https://ajaia-pages.onrender.com/api/health](https://ajaia-pages.onrender.com/api/health); after deployment it should report `{"ok":true,"storage":"postgres"}`. The service URL loaded successfully in a browser, and the health endpoint returned HTTP 200 before the storage-mode check was added; confirm the Postgres value after Render redeploys this commit.
+Live product: [https://ajaia-pages.onrender.com](https://ajaia-pages.onrender.com). The health endpoint is [https://ajaia-pages.onrender.com/api/health](https://ajaia-pages.onrender.com/api/health) and currently reports `{"ok":true,"storage":"postgres"}`, confirming the deployed server can reach Postgres. The service URL also loaded successfully in the browser.
 
 Locally, `PORT`, `HOST`, and `DATA_DIR` can override the port, bind address, and local data directory.
 
